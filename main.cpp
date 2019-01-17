@@ -3,14 +3,15 @@
 #include "iterator"
 using namespace std;
 #ifndef SCENE_SIZE
-#define SCENE_SIZE 10
-#endif
-#ifndef DEFAULT_SCENE_SIZE
-#define DEFAULT_SCENE_SIZE 20
+#define SCENE_SIZE 5
 #endif
 #ifndef DEFAULT_BUNNY_NUM
-#define DEFAULT_BUNNY_NUM 20
+#define DEFAULT_BUNNY_NUM 8
 #endif
+#ifndef DEFAULT_PLAY_TIMES
+#define DEFAULT_PLAY_TIMES 5
+#endif
+
 
 // 兔子在场景重的坐标
 class Position {
@@ -53,37 +54,32 @@ private:
 class Scene {
 public:
     Scene() {
-        scene_size_ = DEFAULT_SCENE_SIZE;
+        cout << "bunny number is " << DEFAULT_BUNNY_NUM << endl;
         for (int i = 0; i < DEFAULT_BUNNY_NUM; i++) {
             addBunny();
         }
     }
-    Scene(int scene_size) {
-        for (int i = 0; i < scene_size; i++) {
-            addBunny();
-        }
-    }
+    
     void addBunny() {
-        bunnies_.emplace_back(Bunny(Position(rand() % scene_size_,rand() % scene_size_)));
+        bunnies_.emplace_back(Bunny(Position(rand() % SCENE_SIZE,rand() % SCENE_SIZE)));
+        cout << "a bunny appeared at: " << bunnies_.back().getPosition().getX() << "," << bunnies_.back().getPosition().getY() << endl;
     }
-    void removeBunny(vector<Bunny>::iterator target) {
-        move(std::begin(bunnies_), std::end(bunnies_), std::back_inserter(target));
+    void removeBunny(Bunny& bunny, vector<Bunny>& target) {
+        target.push_back(move(bunny));
     }
     bool hasNext() {
-        return iter != bunnies_.end();
+        return iterator != bunnies_.end();
     }
     vector<Bunny>::iterator getIterator() {
-        iter = bunnies_.begin();
-        return iter;
+        iterator = bunnies_.begin();
+        return iterator;
     }
     Bunny& getNext() {
-        return *iter++;
+        return *iterator++;
     }
 private:
-    int scene_size_;
     vector<Bunny> bunnies_;
-    int currIndex;
-    vector<Bunny>::iterator iter;
+    vector<Bunny>::iterator iterator;
 };
 
 // 玩家类，拥有 vector<Bunny> 用于装已经被抓到的兔子
@@ -98,14 +94,22 @@ public:
         return bunnies_;
     }
     bool catchBunny(Position position) {
+        cout << "Please the coordinate x and y you'd like to catch a bunny, and seperate x and y using space"<<endl;
+        int x = 0;
+        int y = 0;
+        cin >> x >> y;
+        position = Position(x, y);
         vector<Bunny>::iterator iter = scene_.getIterator();
         while (scene_.hasNext()) {
             Bunny& bunny = scene_.getNext();
             if (position.getX() == bunny.getPosition().getX() && position.getY() == bunny.getPosition().getY()) {
-                scene_.removeBunny(bunnies_.begin());
+                scene_.removeBunny(bunny, bunnies_);
                 cout << "Congratulation. Caught a bunny.";
+                return true;
             }
         }
+        cout << "Sorry, there is no bunny. Try again. Have Fun." << endl;
+        return false;
     }
     void enterScene(Scene scene) {
         scene_ = scene;
@@ -125,16 +129,17 @@ public:
         user_.enterScene(scene_);
     }
     void initialScene() {
-        scene_ = Scene(SCENE_SIZE);
+        scene_ = Scene();
     }
     void initialUser() {
         user_ = User();
     }
-    void play(Scene scene, User user) {
-        for (int i = 0; i < 5; i++) {
-            user.catchBunny(Position(rand() % SCENE_SIZE, rand() % SCENE_SIZE));
+    void play() {
+        for (int i = 0; i < DEFAULT_PLAY_TIMES; i++) {
+            user_.catchBunny(Position(rand() % SCENE_SIZE, rand() % SCENE_SIZE));
         }
     }
+
 private:
     Scene scene_;
     User user_;
@@ -143,6 +148,7 @@ private:
 
 int main() {
     Game game = Game();
-    std::cout << "Hello, World!" << std::endl;
+    game.play();
+    std::cout << "Catching Bunny. Have Fun!" << std::endl;
     return 0;
 }
