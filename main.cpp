@@ -53,13 +53,15 @@ private:
 // removeBunny(target), 将场景里的任意一个兔子转移到 user 下
 class Scene {
 public:
-    Scene() {
+    Scene() {}
+
+    void initialScene() {
         cout << "bunny number is " << DEFAULT_BUNNY_NUM << endl;
         for (int i = 0; i < DEFAULT_BUNNY_NUM; i++) {
             addBunny();
         }
     }
-    
+
     void addBunny() {
         bunnies_.emplace_back(Bunny(Position(rand() % SCENE_SIZE,rand() % SCENE_SIZE)));
         cout << "a bunny appeared at: " << bunnies_.back().getPosition().getX() << "," << bunnies_.back().getPosition().getY() << endl;
@@ -76,6 +78,9 @@ public:
     }
     Bunny& getNext() {
         return *iterator++;
+    }
+    int getNumOfBunnies() {
+        return bunnies_.size();
     }
 private:
     vector<Bunny> bunnies_;
@@ -104,7 +109,9 @@ public:
             Bunny& bunny = scene_.getNext();
             if (position.getX() == bunny.getPosition().getX() && position.getY() == bunny.getPosition().getY()) {
                 scene_.removeBunny(bunny, bunnies_);
-                cout << "Congratulation. Caught a bunny.";
+                cout << "Congratulation. Caught a bunny." << endl;
+                cout << "The number of bunnies in scene is : " << scene_.getNumOfBunnies() << "\n"
+                << "The number of bunnies caught by player is : " << getNumOfBunnies() << endl;
                 return true;
             }
         }
@@ -113,6 +120,9 @@ public:
     }
     void enterScene(Scene scene) {
         scene_ = scene;
+    }
+    int getNumOfBunnies() {
+        return bunnies_.size();
     }
 private:
     vector<Bunny> bunnies_;
@@ -124,17 +134,12 @@ private:
 class Game {
 public:
     Game() {
-        initialScene();
-        initialUser();
-        user_.enterScene(scene_);
-    }
-    void initialScene() {
         scene_ = Scene();
-    }
-    void initialUser() {
         user_ = User();
     }
     void play() {
+        scene_.initialScene();
+        user_.enterScene(scene_);
         for (int i = 0; i < DEFAULT_PLAY_TIMES; i++) {
             user_.catchBunny(Position(rand() % SCENE_SIZE, rand() % SCENE_SIZE));
         }
